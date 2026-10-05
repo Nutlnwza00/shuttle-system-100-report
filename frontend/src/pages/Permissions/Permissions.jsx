@@ -1,0 +1,7 @@
+import React,{useEffect,useMemo,useState} from 'react';
+import * as UI from '../../shared';
+const {api,useApi,reportNames,navItems,Header,Sidebar,Feature,Health,PageTitle,Panel,Stat,InfoGrid,Table,Status,ErrorBox,Loading,Denied,fmtDate,ReportChart}=UI;
+
+function Permissions(){const{data,error,loading,reload}=useApi('/permissions');const[role,setRole]=useState(null);const[checked,setChecked]=useState([]);useEffect(()=>{if(data&&role){const ids=data.rolePermissions.filter(x=>x.POS_ID===role).map(x=>x.PERM_ID);setChecked(ids)}},[role,data]);async function save(){await api('/permissions/'+role,{method:'PUT',body:JSON.stringify({permission_ids:checked})});reload();alert('บันทึกสิทธิ์แล้ว')}return <PageTitle title="🔐 จัดการสิทธิ์ตำแหน่ง" subtitle="Dynamic RBAC — สิทธิ์จริงจาก ROLE_PERMISSIONS"><div className="role-cards">{(data?.roles||[]).map(r=><button className={'role-card '+(role===r.POS_ID?'selected':'')} onClick={()=>setRole(r.POS_ID)} key={r.POS_ID}><b>{r.POS_NAME}</b><small>{r.EMPLOYEE_COUNT} พนักงาน</small></button>)}</div>{role&&<Panel title="กำหนดสิทธิ์"><div className="perm-grid">{(data?.permissions||[]).map(p=><label key={p.PERM_ID} className="check"><input type="checkbox" checked={checked.includes(p.PERM_ID)} onChange={e=>setChecked(e.target.checked?[...checked,p.PERM_ID]:checked.filter(x=>x!==p.PERM_ID))}/><span>{p.SCREEN_KEY}</span><small>{p.PERM_NAME}</small></label>)}</div><button onClick={save}>บันทึกสิทธิ์</button></Panel>}{loading&&!data&&<Loading/>}{error&&<ErrorBox text={error}/>}</PageTitle>}
+
+export default Permissions;
